@@ -12,13 +12,7 @@
 <script src="snake.js"></script>
 <script>
     (function () {
-        var board = new Board("container", 20, 20);
-        board.render();
-        board.startButton().addEventListener("click", function () {
-            board.hidePreview();
-            var snake = new Snake(board, 150, new Cell(2, 2, "right"));
-            snake.start();
-        });
+        initSnake("container", 20, 40, 150);
     })();
 </script>
 </body>

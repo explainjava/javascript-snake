@@ -1,3 +1,13 @@
+function initSnake(containerId, rowsCount, colsCount, speed) {
+    var board = new Board(containerId, rowsCount, colsCount);
+    board.render();
+    board.startButton().addEventListener("click", function () {
+        board.hidePreview();
+        var snake = new Snake(board, speed, new Cell(2, 2, "right"));
+        snake.start();
+    });
+}
+
 function Board(containerId, rowsCount, colsCount) {
     this.containerId = containerId;
     this.rowsCount = rowsCount;
