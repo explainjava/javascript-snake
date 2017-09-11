@@ -157,6 +157,7 @@ function addFruitToBoard(board, snake) {
 
 function addKeyboardListener(snake) {
     document.addEventListener("keydown", function (event) {
+        event.preventDefault();
         var keywordDirection = direction(event.which);
         if (keywordDirection && isAllowedDirection(snake.head.direction, keywordDirection)) {
             snake.setHeadDirection(keywordDirection);

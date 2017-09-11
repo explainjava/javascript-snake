@@ -44,24 +44,24 @@
     cursor: pointer;
 }
 
-table {
+.snake-board table {
     border-collapse: collapse;
 }
 
-td {
+.snake-board td {
     width: 20px;
     height: 20px;
     border: 0;
 }
 
-.col {
+.snake-board .col {
     background-color: yellow;
 }
 
-.snake {
+.snake-board .snake {
     background-color: blue;
 }
 
-.fruit {
+.snake-board .fruit {
     background-color: red;
 }
