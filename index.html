@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        td {
+            width: 20px;
+            height: 20px;
+
+        }
+
+        .col {
+            background-color: yellow;
+        }
+
+        .snake {
+            background-color: blue;
+        }
+
+        .fruit {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script>
+    (function () {
+        var board = new Board("container", 20, 20);
+        board.createHtml();
+        var snake = createSnake(board, {
+            row: 2,
+            col: 2,
+            direction: "right"
+        });
+        addFruitOnBoard(board, snake);
+        addKeyboardListener(snake);
+        snake.start();
+    })();
+
+    function Board(containerId, rowsCount, colsCount) {
+        this.containerId = containerId;
+        this.rowsCount = rowsCount;
+        this.colsCount = colsCount;
+
+        this.createHtml = function () {
+            var html = "<table>";
+            for (var i = 0; i < this.rowsCount; i++) {
+                html += "<tr id='row-" + i + "' class='row'>";
+                for (var j = 0; j < this.colsCount; j++) {
+                    html += "<td id='" + createColumnId(i, j) + "' class='col'></td>";
+                }
+                html += "</tr>"
+            }
+            html += "</table>";
+            document.getElementById(this.containerId).innerHTML = html;
+        }
+    }
+
+    function Snake(board, head) {
+        this.head = head;
+        this.tail = head;
+        this.elements = [head];
+        this.board = board;
+
+        this.setHeadDirection = function (keywordDirection) {
+            this.head.direction = keywordDirection;
+            this.elements[0].direction = keywordDirection;
+        };
+
+        this.grow = function () {
+            var newTail = getNewTail(this.tail);
+            this.elements.push(newTail);
+            this.tail = newTail;
+        };
+
+        this.start = function () {
+            var $snake = this;
+
+            var intervalId = setInterval(function () {
+                var newElements = [];
+
+                var headMovingResult = moveHead();
+                if (!headMovingResult) {
+                    clearInterval(intervalId);
+                    alert("Game is finished. Your snake length is " + $snake.elements.length);
+                }
+                newElements.push(headMovingResult.newHead);
+
+                if ($snake.elements.length > 1) {
+                    newElements.push.apply(newElements, moveElementsAfterHead($snake));
+                }
+
+                $snake.head = newElements[0];
+                $snake.tail = newElements[newElements.length - 1];
+                $snake.elements = newElements;
+                if (headMovingResult.fruit) {
+                    $snake.grow();
+                    addFruitOnBoard($snake.board, $snake);
+                }
+            }, 200);
+
+            function moveHead() {
+                var newHead = getNewHead($snake.head);
+                var nextHeadDomElement = document.getElementById(createColumnId(newHead.row, newHead.col));
+                if (!nextHeadDomElement || nextHeadDomElement.classList.contains("snake")) {
+                    return null;
+                }
+
+                var fruit = nextHeadDomElement.classList.contains("fruit");
+                if (fruit) {
+                    removeClass(nextHeadDomElement, "fruit");
+                }
+
+                removeClass(document.getElementById(createColumnId($snake.head.row, $snake.head.col)), "snake");
+                addClass(nextHeadDomElement, "snake");
+                return {newHead: newHead, fruit: fruit};
+            }
+
+            function moveElementsAfterHead($snake) {
+                var newElements = [];
+                for (var i = 1; i < $snake.elements.length; i++) {
+                    var currentElement = $snake.elements[i];
+                    removeClass(document.getElementById(createColumnId(currentElement.row, currentElement.col)), "snake");
+
+                    var nextElement = $snake.elements[i - 1];
+                    addClass(document.getElementById(createColumnId(nextElement.row, nextElement.col)), "snake");
+
+                    newElements.push(nextElement);
+                }
+                return newElements;
+            }
+        }
+    }
+
+    function addFruitOnBoard(board, snake) {
+        var column;
+        do {
+            column = randomCell(board);
+        } while (isSnakeCell(snake, column));
+        addClass(document.getElementById(createColumnId(column.row, column.col)), "fruit");
+    }
+
+    function isSnakeCell(snake, column) {
+        for (var i = 0; i < snake.elements.length; i++) {
+            var element = snake.elements[i];
+            if (element.row === column.row && element.col === column.col) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function randomCell(board) {
+        return {row: Math.floor(Math.random() * board.rowsCount), col: Math.floor(Math.random() * board.colsCount)};
+    }
+
+    function addKeyboardListener(snake) {
+        document.addEventListener("keydown", function (event) {
+            var keywordDirection = keyCodeToDirection(event.which);
+            if (!isOppositeDirection(snake.head.direction, keywordDirection)) {
+                snake.setHeadDirection(keywordDirection);
+            }
+        });
+    }
+
+    function isOppositeDirection(direction, keywordDirection) {
+        return direction === keywordDirection || (direction === "right" && keywordDirection === "left") || (direction === "left" && keywordDirection === "right") || (direction === "up" && keywordDirection === "down") || (direction === "down" && keywordDirection === "up");
+    }
+
+    function keyCodeToDirection(keyCode) {
+        if (keyCode === 40) {
+            return "down";
+        }
+        if (keyCode === 38) {
+            return "up";
+        }
+        if (keyCode === 37) {
+            return "left";
+        }
+        if (keyCode === 39) {
+            return "right";
+        }
+    }
+
+    function addClass(element, className) {
+        element.classList.add(className);
+    }
+
+    function removeClass(element, className) {
+        if (!element) {
+            console.log(element);
+        }
+        element.classList.remove(className);
+    }
+
+    function getNewHead(element) {
+        switch (element.direction) {
+            case "up":
+                return {row: element.row - 1, col: element.col, direction: element.direction};
+            case "down":
+                return {row: element.row + 1, col: element.col, direction: element.direction};
+            case "left":
+                return {row: element.row, col: element.col - 1, direction: element.direction};
+            case "right":
+                return {row: element.row, col: element.col + 1, direction: element.direction};
+        }
+    }
+
+    function getNewTail(element) {
+        switch (element.direction) {
+            case "up":
+                return {row: element.row + 1, col: element.col, direction: element.direction};
+            case "down":
+                return {row: element.row - 1, col: element.col, direction: element.direction};
+            case "left":
+                return {row: element.row, col: element.col + 1, direction: element.direction};
+            case "right":
+                return {row: element.row, col: element.col - 1, direction: element.direction};
+        }
+    }
+
+    function createSnake(board, head) {
+        var headDom = document.getElementById("col-" + head.row + "-" + head.col);
+        addClass(headDom, "snake");
+        return new Snake(board, {col: head.col, row: head.row, direction: head.direction});
+    }
+
+    function createColumnId(row, col) {
+        return "col-" + row + "-" + col;
+    }
+</script>
+</body>
+</html>
