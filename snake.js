@@ -67,6 +67,7 @@ function Snake(board, speed, head) {
 
         addFruitToBoard(board, this);
         addKeyboardListener(this);
+        addSwipeListener(this);
 
         var intervalId = setInterval(function () {
             var newCells = [];
@@ -165,13 +166,25 @@ function addKeyboardListener(snake) {
     });
 }
 
+function addSwipeListener(snake) {
+    var board = document.getElementsByClassName("snake-board")[0];
+    var hammer = new Hammer(board);
+    hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+    hammer.on('swipe', function(event, arg1, arg2) {
+      event.preventDefault();
+      var keywordDirection = direction(event.direction);
+      if (keywordDirection && isAllowedDirection(snake.head.direction, keywordDirection)) {
+        snake.setHeadDirection(keywordDirection);
+      }
+    });
+}
+
 function isAllowedDirection(direction, keywordDirection) {
     return direction !== keywordDirection && !(direction === "right" && keywordDirection === "left") && !(direction === "left" && keywordDirection === "right") && !(direction === "up" && keywordDirection === "down") && !(direction === "down" && keywordDirection === "up");
 }
 
 function direction(keyCode) {
-    this.keyCodeToDirection = {37: "left", 38: "up", 39: "right", 40: "down"};
-
+    this.keyCodeToDirection = {2: "left", 4: "right", 8: "up", 16: "down", 37: "left", 38: "up", 39: "right", 40: "down"};
     return this.keyCodeToDirection[keyCode];
 }
 
