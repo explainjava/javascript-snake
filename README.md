@@ -10,4 +10,6 @@ You can play retro snake game [here](https://explainjava.com/snake-game/).
 
 If you want to add or to fix something - PRs are welcome.
 
+Visit my blog [codingmorning.com](https://codingmorning.com)!
+
 Enjoy!
